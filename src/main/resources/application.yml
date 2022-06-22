@@ -4,7 +4,10 @@ spring:
   profiles:
     active: dev
   config:
-    import: configserver:http://localhost:8071
+    import: configserver:http://configserver:8071
+  cloud:
+    config:
+      fail-fast: true
 
 management:
   endpoint:
