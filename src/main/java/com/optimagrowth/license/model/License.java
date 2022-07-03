@@ -6,10 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.hateoas.RepresentationModel;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -23,14 +20,31 @@ public class License extends RepresentationModel<License> {
     @Id
     @Column(nullable = false)
     private String licenseId;
+
     private String description;
+
     @Column(nullable = false)
     private String organizationId;
+
     @Column(nullable = false)
     private String productName;
+
     @Column(nullable = false)
     private String licenseType;
+
     private String comment;
+
+    @Transient
+    private String name;
+
+    @Transient
+    private String contactName;
+
+    @Transient
+    private String contactEmail;
+
+    @Transient
+    private String contactPhone;
 
     public License withComment(String comment) {
         this.setComment(comment);
