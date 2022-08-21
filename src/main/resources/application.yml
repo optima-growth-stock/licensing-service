@@ -27,6 +27,12 @@ resilience4j.circuitbreaker:
       waitDurationInOpenState: 20s
       failureRateThreshold: 60
 
+resilience4j.bulkhead:
+  instances:
+    bulkheadLicenseService:
+      maxWaitDuration: 10ms
+      maxConcurrentCalls: 20
+
 management:
   endpoint:
     health:
