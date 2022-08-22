@@ -7,6 +7,7 @@ import com.optimagrowth.license.repository.LicenseRepository;
 import com.optimagrowth.license.service.client.OrganizationServiceClient;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -33,6 +34,7 @@ public class LicenseService {
     @CircuitBreaker(name = "licenseService")
     @Bulkhead(name = "bulkheadLicenseService")
     @Retry(name = "retryLicenseService", fallbackMethod = "buildFallbackLicenseList")
+    @RateLimiter(name = "licenseService")
     public List<License> getLicenses(String organizationId) {
         List<License> licenses = licenseRepository.findByOrganizationId(organizationId);
 
