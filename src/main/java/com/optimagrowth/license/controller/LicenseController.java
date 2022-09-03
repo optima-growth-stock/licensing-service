@@ -2,9 +2,12 @@ package com.optimagrowth.license.controller;
 
 import com.optimagrowth.license.model.License;
 import com.optimagrowth.license.service.LicenseService;
+import com.optimagrowth.license.utils.UserContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Locale;
@@ -13,12 +16,14 @@ import java.util.Locale;
 @RestController
 @RequestMapping(value = "/v1/organization/{organizationId}/license")
 public class LicenseController {
+    private static final Logger logger = LoggerFactory.getLogger(LicenseController.class);
 
     @Autowired
     private LicenseService licenseService;
 
     @GetMapping
     public ResponseEntity<List<License>> getLicenses(@PathVariable String organizationId) {
+        logger.debug("LicenseServiceController Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
         List<License> licenses = licenseService.getLicenses(organizationId);
         licenses.forEach(License::addLinks);
 

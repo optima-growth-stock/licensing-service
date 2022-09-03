@@ -5,6 +5,7 @@ import com.optimagrowth.license.model.License;
 import com.optimagrowth.license.model.Organization;
 import com.optimagrowth.license.repository.LicenseRepository;
 import com.optimagrowth.license.service.client.OrganizationServiceClient;
+import com.optimagrowth.license.utils.UserContextHolder;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -12,6 +13,8 @@ import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.UUID;
 
 @Service
 public class LicenseService {
+    private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
 
     @Autowired
     private ResourceBundleMessageSource messages;
@@ -36,6 +40,8 @@ public class LicenseService {
     @Retry(name = "retryLicenseService", fallbackMethod = "buildFallbackLicenseList")
     @RateLimiter(name = "licenseService")
     public List<License> getLicenses(String organizationId) {
+        logger.debug("getLicensesByOrganization Correlation id: {}", UserContextHolder.getContext().getCorrelationId());
+
         List<License> licenses = licenseRepository.findByOrganizationId(organizationId);
 
         Organization organization = organizationClient.getOrganization(organizationId);
