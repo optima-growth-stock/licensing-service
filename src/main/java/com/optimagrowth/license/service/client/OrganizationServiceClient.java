@@ -14,7 +14,6 @@ public class OrganizationServiceClient {
     @Autowired
     private RestTemplate restTemplate;
 
-    @CircuitBreaker(name = "organizationClient")
     public Organization getOrganization(String organizationId) {
         ResponseEntity<Organization> organization
                 = restTemplate.exchange("http://organization-service/v1/organization/{organizationId}", HttpMethod.GET, null, Organization.class, organizationId);
