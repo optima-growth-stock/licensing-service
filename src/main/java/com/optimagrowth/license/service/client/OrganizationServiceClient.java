@@ -60,6 +60,7 @@ public class OrganizationServiceClient {
 
     private void cacheOrganizationObject(Organization organization) {
         try {
+            logger.info("Caching organization {} in Redis.", organization.getId());
             redisRepository.save(organization);
         } catch (Exception ex){
             logger.error("Unable to cache organization {} in Redis. Exception {}", organization.getId(), ex);

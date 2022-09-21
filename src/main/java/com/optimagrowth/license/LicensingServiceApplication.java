@@ -1,6 +1,5 @@
 package com.optimagrowth.license;
 
-import com.optimagrowth.license.config.RedisConfig;
 import com.optimagrowth.license.events.model.OrganizationChangeModel;
 import com.optimagrowth.license.repository.OrganizationRedisRepository;
 import com.optimagrowth.license.utils.UserContextInterceptor;
@@ -15,9 +14,6 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Sink;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.LocaleResolver;
@@ -25,6 +21,7 @@ import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 @SpringBootApplication
 @EnableBinding(Sink.class)
@@ -35,9 +32,6 @@ public class LicensingServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(LicensingServiceApplication.class, args);
     }
-
-    @Autowired
-    private RedisConfig redisConfig;
 
     @Autowired
     private OrganizationRedisRepository organizationRedisRepository;
@@ -70,26 +64,12 @@ public class LicensingServiceApplication {
     }
 
     @StreamListener(Sink.INPUT)
-    public void loggerSink(OrganizationChangeModel orgChange) {
+    public void invalidateCache(OrganizationChangeModel orgChange) {
         logger.debug("Received an {} event for organization id {}", orgChange.getAction(), orgChange.getOrganizationId());
-        if(orgChange.getAction() == "DELETED" || orgChange.getAction() == "UPDATED")
+        if(Objects.equals(orgChange.getAction(), "DELETED") || Objects.equals(orgChange.getAction(), "UPDATED")) {
+            logger.info("Invalidating cache for organization {} in Redis.", orgChange.getOrganizationId());
             organizationRedisRepository.deleteById(orgChange.getOrganizationId());
-    }
-
-    @Bean
-    JedisConnectionFactory jedisConnectionFactory() {
-        String hostname = redisConfig.getServer();
-        int port = Integer.parseInt(redisConfig.getPort());
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(hostname, port);
-        //redisStandaloneConfiguration.setPassword(RedisPassword.of("yourRedisPasswordIfAny"));
-        return new JedisConnectionFactory(redisStandaloneConfiguration);
-    }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(jedisConnectionFactory());
-        return template;
+        }
     }
 
 }
