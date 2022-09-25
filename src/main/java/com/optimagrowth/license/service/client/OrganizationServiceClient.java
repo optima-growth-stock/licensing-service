@@ -56,6 +56,7 @@ public class OrganizationServiceClient {
 
     private Organization checkRedisCache(String organizationId) {
         ScopedSpan span = tracer.startScopedSpan("readLicensingDataFromRedis");
+        span.event("Starting redis check");
 
         try {
             return redisRepository.findById(organizationId).orElse(null);
@@ -64,6 +65,7 @@ public class OrganizationServiceClient {
             return null;
         } finally {
             span.tag("peer.service", "redis");
+            span.event("Finishing redis check");
             span.end();
         }
     }
