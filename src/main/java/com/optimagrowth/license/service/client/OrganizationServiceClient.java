@@ -6,6 +6,8 @@ import com.optimagrowth.license.utils.UserContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.sleuth.ScopedSpan;
+import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,9 @@ public class OrganizationServiceClient {
 
     @Autowired
     OrganizationRedisRepository redisRepository;
+
+    @Autowired
+    private Tracer tracer;
 
     private static final Logger logger = LoggerFactory.getLogger(OrganizationServiceClient.class);
 
@@ -50,11 +55,16 @@ public class OrganizationServiceClient {
     }
 
     private Organization checkRedisCache(String organizationId) {
+        ScopedSpan span = tracer.startScopedSpan("readLicensingDataFromRedis");
+
         try {
             return redisRepository.findById(organizationId).orElse(null);
         } catch (Exception ex){
             logger.error("Error encountered while trying to retrieve organization {}, check Redis Cache.  Exception {}", organizationId, ex);
             return null;
+        } finally {
+            span.tag("peer.service", "redis");
+            span.end();
         }
     }
 
